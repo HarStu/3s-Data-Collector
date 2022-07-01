@@ -12,9 +12,9 @@ Retrieve replays from FC API. Run as follows:
         rank cutoff defaults to S (6)
 
 TODO:
-    only fetch replays from a specific gameid
-        - command line argument added, functionality not yet implemented (i.e, all replays for all games will still be grabbed)
-    option to download replays to individual player json, or master database json
+    option to download replays to individual player json, or main database json
+        or to player/game instead of player/main database?
+    verify that we're only retrieving ranked games?
     split this into two files (one defining the class/function, and another entry point for the program)
 """
 
@@ -40,7 +40,7 @@ def get_player_replays(player, gameid):
     retrieved_games = {}
 
     # create empty dict to hold repeated games (for debugging)
-    repeated_games = {}
+    discarded_games = {}
 
     # for escaping while loop once all games have been retrieved
     redundancy_achieved = False
@@ -51,7 +51,7 @@ def get_player_replays(player, gameid):
     fetch_count = 100
 
     # variables for debug
-    repeated_games_count = 0
+    discarded_games_count = 0
     original_games_count = 0
 
     # Loop through multiple API calls
@@ -75,42 +75,42 @@ def get_player_replays(player, gameid):
         # convert response into json
         response_json = r.json()
 
-        # assuming this is the finale batch of games until proven otherwise
+        # assuming this is the final batch of games until proven otherwise
         redundancy_achieved = True
 
-        # if a game in response_json is NOT in retrieved_games, add it and set redundancy_achieved to False
-        # if a game in response_json is in retrieved_json, add it to repeated_games
-        # in both cases, iterate the respective counts for debugging
+        """
+        add new games in response_json to retrieved_games
+
+        criteria for adding a game to the retrieved_games
+            - game is NOT already in retrieved_games
+            - game[gameid] matches the gameid we're looking for 
+        """
         for game in response_json['results']['results']:
             if game in retrieved_games.values():
                 # assuming offset is iterated properly, this is never entered unless there is an issue on FC's end
                 # there seems to be such an issue on certain accounts (exodus3rd)
-                repeated_games[game['quarkid']] = game
-                repeated_games_count = repeated_games_count + 1
-            else:
-                # the game doesn't exist in retrieved_games
+                discarded_games_count = discarded_games_count + 1
+            elif game['gameid'] == gameid:
+                # the game doesn't exist in retrieved_games, and the gameid matches our target
                 # so we add it, and this loop is not redundant
                 retrieved_games[game['quarkid']] = game
                 redundancy_achieved = False
                 original_games_count = original_games_count + 1
-        
-        print("as of this loop, we have " + str(repeated_games_count) + " repeated games and " + str(original_games_count) + " original games")
+            else:
+                # gameid doesn't match    
+                discarded_games_count = discarded_games_count + 1 
+                
+        print("as of this loop, we have " + str(discarded_games_count) + " discarded games and " + str(original_games_count) + " original games")
 
         offset = offset + 100
 
-    return retrieved_games, repeated_games
+    return retrieved_games
 
 # call function
 games = get_player_replays(player, gameid)
 
 # save retrieved games to json files
 # TODO - overhaul this to accomodate for saving to database/individual JSONs
-print('Creating ' + player + '-original-games.json')
+print('Creating ' + player + '-games.json')
 with open('./data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
-    json.dump(games[0], f, ensure_ascii=False, indent=4)
-if len(games[1]) > 0:
-    print('Repeated games present. Creating ' + player + '-repeated-games.json')
-    with open('./data/' + player + '-repeated-games.json', 'w', encoding='utf-8') as f:
-        json.dump(games[1], f, ensure_ascii=False, indent=4)
-else:
-    print("No repeated games present")
+    json.dump(games, f, ensure_ascii=False, indent=4)
