@@ -15,6 +15,7 @@ TODO:
     only fetch replays from a specific gameid
         - command line argument added, functionality not yet implemented (i.e, all replays for all games will still be grabbed)
     option to download replays to individual player json, or master database json
+    split this into two files (one defining the class/function, and another entry point for the program)
 """
 
 player = None
@@ -33,22 +34,6 @@ elif argv_len == 3:
     player = sys.argv[1]
     gameid = sys.argv[2]
 print("retrieving {_player}'s {_gameid} replays".format(_player = player, _gameid = gameid))
-
-# call function
-games = get_player_replays(player, gameid)
-
-# save retrieved games to json files
-# TODO - overhaul this to accomodate for saving to database/individual JSONs
-print('Creating ' + player + '-original-games.json')
-with open('./data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
-    json.dump(games[0], f, ensure_ascii=False, indent=4)
-if len(games[1]) > 0:
-    print('Repeated games present. Creating ' + player + '-repeated-games.json')
-    with open('./data/' + player + '-repeated-games.json', 'w', encoding='utf-8') as f:
-        json.dump(games[1], f, ensure_ascii=False, indent=4)
-else:
-    print("No repeated games present")
-
 
 def get_player_replays(player, gameid):
     # create empty dict to hold retrieved games
@@ -114,3 +99,18 @@ def get_player_replays(player, gameid):
         offset = offset + 100
 
     return retrieved_games, repeated_games
+
+# call function
+games = get_player_replays(player, gameid)
+
+# save retrieved games to json files
+# TODO - overhaul this to accomodate for saving to database/individual JSONs
+print('Creating ' + player + '-original-games.json')
+with open('./data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
+    json.dump(games[0], f, ensure_ascii=False, indent=4)
+if len(games[1]) > 0:
+    print('Repeated games present. Creating ' + player + '-repeated-games.json')
+    with open('./data/' + player + '-repeated-games.json', 'w', encoding='utf-8') as f:
+        json.dump(games[1], f, ensure_ascii=False, indent=4)
+else:
+    print("No repeated games present")
