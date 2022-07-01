@@ -4,25 +4,53 @@ import json
 
 """
 Retrieve replays from FC API. Run as follows:
-    python3 get-replays.py <player>
+    python3 get-replays.py <player> <gameid>
+
+    defaults:
+        no arguments throws error
+        gameid defaults to sfiii3nr1
+        rank cutoff defaults to S (6)
 
 TODO:
-    only fetch replays from a specific game
-    return information about total number of replays?
-    return more information in general
-    exception handling?
-    figure out why repeated_games_count isn't incrementing
+    only fetch replays from a specific gameid
+        - command line argument added, functionality not yet implemented (i.e, all replays for all games will still be grabbed)
+    option to download replays to individual player json, or master database json
 """
 
+player = None
+gameid = 'sfiii3nr1'
 
-player = sys.argv[1]
+# handle command line arguments
+# TODO - add option for database/individual json
+argv_len = len(sys.argv)
+if argv_len == 1:
+    print("No player specified! Please try again. Use the following format:")
+    print("    python3 get-replays.py <player> <gameid> <rank cutoff> <individual/master json>")
+    sys.exit()
+elif argv_len == 2:
+    player = sys.argv[1]
+elif argv_len == 3:
+    player = sys.argv[1]
+    gameid = sys.argv[2]
+print("retrieving {_player}'s {_gameid} replays".format(_player = player, _gameid = gameid))
 
-if player == None:
-    print("no player specified! aborting")
+# call function
+games = get_player_replays(player, gameid)
+
+# save retrieved games to json files
+# TODO - overhaul this to accomodate for saving to database/individual JSONs
+print('Creating ' + player + '-original-games.json')
+with open('./data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
+    json.dump(games[0], f, ensure_ascii=False, indent=4)
+if len(games[1]) > 0:
+    print('Repeated games present. Creating ' + player + '-repeated-games.json')
+    with open('./data/' + player + '-repeated-games.json', 'w', encoding='utf-8') as f:
+        json.dump(games[1], f, ensure_ascii=False, indent=4)
 else:
-    print("requesting replays from " + player)
+    print("No repeated games present")
 
-def get_player_replays(player):
+
+def get_player_replays(player, gameid):
     # create empty dict to hold retrieved games
     retrieved_games = {}
 
@@ -86,14 +114,3 @@ def get_player_replays(player):
         offset = offset + 100
 
     return retrieved_games, repeated_games
-
-games = get_player_replays(player)
-print('Creating ' + player + '-original-games.json')
-with open('./data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
-    json.dump(games[0], f, ensure_ascii=False, indent=4)
-if len(games[1]) > 0:
-    print('Repeated games present. Creating ' + player + '-repeated-games.json')
-    with open('./data/' + player + '-repeated-games.json', 'w', encoding='utf-8') as f:
-        json.dump(games[1], f, ensure_ascii=False, indent=4)
-else:
-    print("No repeated games present")
