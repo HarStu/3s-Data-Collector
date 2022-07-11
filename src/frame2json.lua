@@ -6,25 +6,17 @@
 	player 2: located at 0x02069104
 ]]
 
+-- file must be present in /fbneo/lua
 local json = require ("dkjson")
 
-p1_location = 0x02068C6C
+-- verify that the script has started
+emu.print("hello world")
 
-game_data = {}
-
--- collect a snapshot of game data and return it as a table
+-- return a single value from memory. eventually this will return a table of values
 function take_snapshot()
-	return {
-		frame_number = memory.readdword(0x2007F00),
-		p1_posture = memory.readbyte(p1_location + 0x20E)
-	}
+	return memory.readdword(0x2007F00)
 end
 
--- every frame, take a snapshot, convert it to a json, and output such. 
-while emu.frameadvance() do
-	table_frame = take_snapshot
-	json_frame = json.encode(frame, {indent = true})
-	print(json_frame)
-end
-
-print(frame)
+emu.print("here's the current frame_number value")
+print(tostring(take_snapshot()))
+emu.print("goodbye!\n")
