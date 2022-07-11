@@ -6,7 +6,7 @@
 	player 2: located at 0x02069104
 ]]
 
-json = require ("./lua-libs/dkjson")
+local json = require ("dkjson")
 
 p1_location = 0x02068C6C
 
