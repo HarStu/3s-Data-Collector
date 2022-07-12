@@ -3,7 +3,6 @@
 
 	TODOS:
 		file out
-			write to file rather than command line
 			write to file in JSON format
 		additional data
 			ingame timer
@@ -11,10 +10,7 @@
 			p2 health
 			(more to come)
 		verification
-			it can't be assumed that registerafter is only called once per frame
-			so make sure that the frame_number value is unique before adding the data to the output
-
-
+			it can't be assumed that registerafter is only called once per frame, so make sure that the frame_number value is unique before adding the data to the output
 ]]
 
 -- file must be present in /fbneo/lua
@@ -25,9 +21,9 @@ p1_base = 0x02068C6C
 p2_base = 0x02069104
 frame_number = 0x2007F00 --dword
 
-
--- verify that the script has started
-emu.print("hello world")
+-- important memory offsets
+-- add these to the base addresses to get the relevant value for each player
+life_offset = 0x9F --byte
 
 -- setup the output file
 output_file = io.open("../data/log.txt", "w")
@@ -38,17 +34,20 @@ function on_start()
 end
 
 function on_exit()
-	print("all done!")
 	output_file:close()
 end
 
 function per_frame()
-	emu_frame = emu.framecount()
+
+	-- capture information about the game
 	ingame_frame = memory.readdword(frame_number)
+	p1_life = memory.readbyte(p1_base + life_offset)
+	p2_life = memory.readbyte(p2_base + life_offset)
 
-	output_file:write("INGAME FRAME: " .. tostring(ingame_frame) .. "\n")
+	output_file:write("FRAME: " .. tostring(ingame_frame) .. "\n")
+	output_file:write("p1 life: " .. tostring(p1_life) .. "\n")
+	output_file:write("p2 life: " .. tostring(p2_life) .. "\n")
 	output_file:write("\n")
-
 end
 
 emu.registerstart(on_start)
