@@ -4,10 +4,7 @@
 	TODOS:
 		file out
 			write to file in JSON format
-		additional data
-			ingame timer
-			p1 health
-			p2 health
+		additional data to capture
 			(more to come)
 		verification
 			it can't be assumed that registerafter is only called once per frame, so make sure that the frame_number value is unique before adding the data to the output
