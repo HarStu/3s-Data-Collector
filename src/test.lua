@@ -17,6 +17,7 @@ local json = require ("dkjson")
 p1_base = 0x02068C6C
 p2_base = 0x02069104
 frame_number = 0x2007F00 --dword
+match_state = 0x020154A7 --byte
 
 -- important memory offsets
 -- add these to the base addresses to get the relevant value for each player
@@ -38,12 +39,22 @@ function per_frame()
 
 	-- capture information about the game
 	ingame_frame = memory.readdword(frame_number)
+
 	p1_life = memory.readbyte(p1_base + life_offset)
 	p2_life = memory.readbyte(p2_base + life_offset)
 
-	output_file:write("FRAME: " .. tostring(ingame_frame) .. "\n")
+	in_match = nil 
+	if memory.readbyte(match_state) == 0x02 then
+		in_match = "yes"
+	else
+		in_match = "no"
+	end
+
+	-- write captured information to output file
+	output_file:write("frame: " .. tostring(ingame_frame) .. "\n")
 	output_file:write("p1 life: " .. tostring(p1_life) .. "\n")
 	output_file:write("p2 life: " .. tostring(p2_life) .. "\n")
+	output_file:write("in match?: " .. tostring(in_match) .. "\n")
 	output_file:write("\n")
 end
 
