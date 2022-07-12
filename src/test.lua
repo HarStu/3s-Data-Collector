@@ -6,10 +6,12 @@
 		the ingame frame_number does not 
 
 	TODOS:
-		file out
-			write to file in JSON format
+		find a reliable way to end the lua when the replay is complete
+			necessary so that we can use the on_exit function to encode and output the json file
+		file output
+			create a hierarchical {replay {game {round {frame}}}} format for the json output
 		additional data to capture
-			(more to come)
+			capture additional values each frame, as well as values which are relevant on a replay/round/game level
 		verification
 			it can't be assumed that registerafter is only called once per frame, so make sure that the frame_number value is unique before adding the data to the output
 ]]
@@ -39,8 +41,8 @@ function on_start()
 	output_txt:write("\nemulation started!\n\n")
 end
 
--- runs when the lua is stopped
--- note that this isn't properly occur if the window is closed early!
+-- runs when the lua script ends
+-- note that this doesn't run if the window is closed before the lua ends
 function on_exit()
 	output_table_json_string = json.encode(output_table, {indent = true})
 	output_json:write(output_table_json_string)
