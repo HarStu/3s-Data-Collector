@@ -29,6 +29,10 @@ match_state = 0x020154A7 --byte
 -- add these to the base addresses to get the relevant value for each player
 life_offset = 0x9F --byte
 
+-- set up working json (fightcade api json)
+json_tempfile = io.input("../data/.working.json"):read('*a')
+working_json = json.decode(tostring(json_tempfile))
+
 -- setup the output files
 output_txt = io.open("../data/log.txt", "w")
 output_json = io.open("../data/log.json", "w")
@@ -39,6 +43,7 @@ output_table = {}
 -- runs when emulation starts, or is reset
 function on_start() 
 	output_txt:write("\nemulation started!\n\n")
+
 end
 
 -- runs when the lua script ends
