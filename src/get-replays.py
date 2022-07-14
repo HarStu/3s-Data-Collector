@@ -112,5 +112,5 @@ games = get_player_replays(player, gameid)
 # save retrieved games to json files
 # TODO - overhaul this to accomodate for saving to database/individual JSONs
 print('Creating {_player}-{_gameid}.json'.format(_player = player, _gameid = gameid))
-with open('../data/' + player + '-original-games.json', 'w', encoding='utf-8') as f:
+with open('../data/{_player}-{_gameid}-original-games.json'.format(_player = player, _gameid = gameid), 'w', encoding='utf-8') as f:
     json.dump(games, f, ensure_ascii=False, indent=4)
