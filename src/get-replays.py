@@ -26,7 +26,7 @@ gameid = 'sfiii3nr1'
 argv_len = len(sys.argv)
 if argv_len == 1:
     print("No player specified! Please try again. Use the following format:")
-    print("    python3 get-replays.py <player> <gameid> <rank cutoff> <individual/master json>")
+    print("    python3 get-replays.py <player> (<gameid>)")
     sys.exit()
 elif argv_len == 2:
     player = sys.argv[1]
