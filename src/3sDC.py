@@ -38,6 +38,7 @@ def scrape_individual_replay(_challenge_id):
         config = json.load(c)
 
     fcadefbneo = config["fcadefbneo_path"]
+    scraper = config["scraper_path"]
     json_database = "../data/" + config["replay_json_database_filename"]
 
 
@@ -65,7 +66,8 @@ def scrape_individual_replay(_challenge_id):
         [
             "/usr/bin/wine",
             f'{fcadefbneo}',
-            f'quark:stream,sfiii3nr1,{_challenge_id}.2,7100'
+            f'quark:stream,sfiii3nr1,{_challenge_id}.2,7100',
+            f'{scraper}'
         ],
         env = running_env
     )

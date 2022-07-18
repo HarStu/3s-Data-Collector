@@ -1,4 +1,8 @@
-# a script to generate a .config.json file
+"""
+script to generate a .config.json file
+TODO: currently clunky and out of date; does not fill all the necessary fields in .config.json
+    probably easier to just modify that file manually
+"""
 import sys
 import json
 import os
