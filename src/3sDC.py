@@ -5,14 +5,16 @@ Starts a replay w/ the scraping lua running. To scrape a single game, run as fol
 
 TODO:
     immediately
-        after .working.json has been created, start the emulator with the scraping lua
-        retrieve the json database being worked on, and the location of the fc install, from ../data/.config.json
+        start scraper.lua along w/ replay
+        clean up enviroment at the end (kill processes)
+        reorganize this file (wrap everything in a class, make sure variable names are consistent)
     down the line
         add functionality to fetch and scrape replays back-to-back, rather than having to do each one individually
 """
 import sys
 import json
 import os
+import subprocess
 
 
 challenge_id = None
@@ -38,6 +40,7 @@ def scrape_individual_replay(_challenge_id):
     fcadefbneo = config["fcadefbneo_path"]
     json_database = "../data/" + config["replay_json_database_filename"]
 
+
     # grab game which is going to be scraped, and output it to .working.json
     # when scraper.lua runs, it will read from .working.json
     print("Scraping {game} from {database}".format(game = _challenge_id, database = json_database))
@@ -52,5 +55,19 @@ def scrape_individual_replay(_challenge_id):
 
     with open("../data/.working.json", "w") as w:
         json.dump(target_game, w, ensure_ascii = False, indent = 4)
+
+    # start replay
+    # current doesn't start scraper lua
+    print("starting fcadefbneo")
+    running_env = os.environ.copy()
+    running_env["WINEDLLOVERRIDES"] = "avifil32=n,b"
+    subprocess.run(
+        [
+            "/usr/bin/wine",
+            f'{fcadefbneo}',
+            f'quark:stream,sfiii3nr1,{_challenge_id}.2,7100'
+        ],
+        env = running_env
+    )
 
 scrape_individual_replay(challenge_id)
