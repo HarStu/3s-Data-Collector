@@ -18,99 +18,91 @@ TODO:
     split this into two files (one defining the class/function, and another entry point for the program)
 """
 
-player = None
-gameid = 'sfiii3nr1'
 
-# handle command line arguments
-# TODO - add option for database/individual json
-argv_len = len(sys.argv)
-if argv_len == 1:
-    print("No player specified! Please try again. Use the following format:")
-    print("    python3 get-replays.py <player> (<gameid>)")
-    sys.exit()
-elif argv_len == 2:
-    player = sys.argv[1]
-elif argv_len == 3:
-    player = sys.argv[1]
-    gameid = sys.argv[2]
-print("Retrieving {_player}'s {_gameid} replays".format(_player = player, _gameid = gameid))
+class Replayfetcher:
 
-def get_player_replays(player, gameid):
-    # create empty dict to hold retrieved games
-    retrieved_games = {}
+    def __init__(self, output_games_json_path):
+        self.gameid = 'sfiii3nr1'
+        self.output_games_json_path = output_games_json_path
 
-    # create empty dict to hold repeated games (for debugging)
-    discarded_games = {}
+    # Fetch and return a dict of games for a given username
+    def get_username_replays(self, player):
+        # create empty dict to hold retrieved games
+        retrieved_games = {}
 
-    # for escaping while loop once all games have been retrieved
-    redundancy_achieved = False
+        # create empty dict to hold repeated games (for debugging)
+        discarded_games = {}
 
-    # offset to retrieve each batch of games, and the amount of games to fetch each loop
-    # 100 is the maximum
-    offset = 0
-    fetch_count = 100
+        # for escaping while loop once all games have been retrieved
+        redundancy_achieved = False
 
-    # variables for debug
-    discarded_games_count = 0
-    original_games_count = 0
+        # offset to retrieve each batch of games, and the amount of games to fetch each loop
+        # 100 is the maximum
+        offset = 0
+        fetch_count = 100
 
-    # Loop through multiple API calls
-    while redundancy_achieved == False:
+        # variables for debug
+        discarded_games_count = 0
+        original_games_count = 0
 
-        # set up query to be posted
-        query = {
-            'req':'searchquarks',
-            'best':'false',
-            'offset':offset,
-            'limit':offset + fetch_count,
-            'username':player
-        }
-    
-        # post query
-        r = requests.post(
-            "https://www.fightcade.com/api/",
-            json=query
-        )
+        # Loop through multiple API calls
+        while redundancy_achieved == False:
+
+            # set up query to be posted
+            query = {
+                'req':'searchquarks',
+                'best':'false',
+                'offset':offset,
+                'limit':offset + fetch_count,
+                'username':player
+            }
         
-        # convert response into json
-        response_json = r.json()
+            # post query
+            r = requests.post(
+                "https://www.fightcade.com/api/",
+                json=query
+            )
+            
+            # convert response into json
+            response_json = r.json()
 
-        # assuming this is the final batch of games until proven otherwise
-        redundancy_achieved = True
+            # assuming this is the final batch of games until proven otherwise
+            redundancy_achieved = True
 
-        """
-        add new games in response_json to retrieved_games
+            """
+            add new games in response_json to retrieved_games
 
-        criteria for adding a game to the retrieved_games
-            - game is NOT already in retrieved_games
-            - game[gameid] matches the gameid we're looking for 
-        """
-        for game in response_json['results']['results']:
-            if game in retrieved_games.values():
-                # assuming offset is iterated properly, this is never entered unless there is an issue on FC's end
-                # there seems to be such an issue on certain accounts (exodus3rd)
-                discarded_games_count = discarded_games_count + 1
-            elif game['gameid'] == gameid:
-                # the game doesn't exist in retrieved_games, and the gameid matches our target
-                # so we add it, and this loop is not redundant
-                retrieved_games[game['quarkid']] = game
-                redundancy_achieved = False
-                original_games_count = original_games_count + 1
-            else:
-                # gameid doesn't match    
-                discarded_games_count = discarded_games_count + 1 
-                
-        print("as of this loop, we have " + str(discarded_games_count) + " discarded games and " + str(original_games_count) + " original games")
+            criteria for adding a game to the retrieved_games
+                - game is NOT already in retrieved_games
+                - game[gameid] matches self.gameid
+            """
+            for game in response_json['results']['results']:
+                if game in retrieved_games.values():
+                    # assuming offset is iterated properly, this is never entered unless there is an issue on FC's end
+                    # there seems to be such an issue on certain accounts (exodus3rd)
+                    discarded_games_count = discarded_games_count + 1
+                elif game['gameid'] == self.gameid:
+                    # the game doesn't exist in retrieved_games, and the gameid matches our target
+                    # so we add it, and this loop is not redundant
+                    retrieved_games[game['quarkid']] = game
+                    redundancy_achieved = False
+                    original_games_count = original_games_count + 1
+                else:
+                    # gameid doesn't match    
+                    discarded_games_count = discarded_games_count + 1 
+                    
+            print("as of this loop, we have " + str(discarded_games_count) + " discarded games and " + str(original_games_count) + " original games")
 
-        offset = offset + 100
+            offset = offset + 100
 
-    return retrieved_games
+        return retrieved_games
 
-# call function
-games = get_player_replays(player, gameid)
+    # save a dict of games to self.output_games_json_path
+    def save_games_to_output_json(self, retrieved_games):
+        pass
 
-# save retrieved games to json files
-# TODO - overhaul this to accomodate for saving to database/individual JSONs
-print('Creating {_player}-{_gameid}.json'.format(_player = player, _gameid = gameid))
-with open('../data/{_player}-{_gameid}.json'.format(_player = player, _gameid = gameid), 'w', encoding='utf-8') as f:
-    json.dump(games, f, ensure_ascii=False, indent=4)
+    # save a dict of games to a throwaway "output" json, rather than the master json
+    # here for testing
+    def save_games_to_test_json(self, retrieved_games):
+        with open('../data/test.json', 'w', encoding = 'utf-8') as t:
+            json.dump(retrieved_games, t, ensure_ascii = False, indent = 4)
