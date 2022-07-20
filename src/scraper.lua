@@ -7,7 +7,8 @@
 
 	TODOS:
 		find a reliable way to end the lua when the replay is complete
-			necessary so that we can use the on_exit function to encode and output the json file
+			going to use score; we'll exit when the score recorded by the lua matches the final score in the working json
+			this means we need a system which can track score across resets
 		file output
 			create a hierarchical {replay {game {round {frame}}}} format for the json output
 		additional data to capture
@@ -103,13 +104,29 @@ function per_frame()
 	frame = get_frame_table()
 
 	-- update gui
+	update_gui(frame)
+
+	-- write scraped frame information to output_txt
+	write_frame_to_output_txt(frame)
+
+	-- add frame as a entry on output table
+	-- since the replay frame is persistent across resets, it will serve as the key 
+	output_table[frame["replay frame"]] = frame
+end
+
+
+-- print values from frame table to the screen
+function update_gui(frame)
 	gui.text(30, 30, "PROJECTED REPLAY DURATION: " .. duration_in_frames)
 	gui.text(30, 40, "     CURRENT REPLAY FRAME: " .. tostring(frame["replay frame"]))
 	gui.text(30, 60, "                IN MATCH?: " .. frame["in match"])
 	gui.text(30, 70, "                  P1 LIFE: " .. tostring(frame["p1 life"]))
 	gui.text(30, 80, "                  P2 LIFE: " .. tostring(frame["p2 life"]))
+end
 
-	-- write scraped frame information to output_txt
+
+-- write values from a frame table to output_txt
+function write_frame_to_output_txt(frame)
 	output_txt:write("replay frame: " .. tostring(frame["replay frame"] .. "\n"))
 	output_txt:write("emu frame:    " .. tostring(frame["emu frame"]) .. "\n")
 	output_txt:write("ingame frame: " .. tostring(frame["ingame frame"]) .. "\n")
@@ -117,16 +134,6 @@ function per_frame()
 	output_txt:write("p1 life:      " .. tostring(frame["p1 life"]) .. "\n")
 	output_txt:write("p2 life:      " .. tostring(frame["p2 life"]) .. "\n")
 	output_txt:write("\n")
-
-	-- add frame as a entry on output table
-	-- since the replay frame is persistent across resets, it will serve as the key 
-	output_table[frame["replay frame"]] = frame
-	
-	--[[
-	if replay_frame > 3000 then
-		os.exit()
-	end
-	--]]
 end
 
 
