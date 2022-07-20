@@ -16,10 +16,8 @@
 			it can't be assumed that registerafter is only called once per frame, so make sure that the frame_number value is unique before adding the data to the output
 			this is also relevant for updating replay_frame_count
 		compartmentalize parts of per_frame()
-			create a get_frame_table function which returns a frame_table
 			create a print_frame_table function which outputs the contents of a frame table to the gui
 			create a function for adding frame_table to output.txt
-			create a functino for adding frame_table to output.json
 ]]
 
 -- if there's issues, try adding dkjson.lua to /fbneo/lua
@@ -40,18 +38,21 @@ json_tempfile = io.input("../data/.working.json"):read('*a')
 working_json = json.decode(tostring(json_tempfile))
 
 -- setup the output files
-output_txt = io.open("../data/log.txt", "w")
-output_json = io.open("../data/log.json", "w")
+output_txt = io.open("../data/output.txt", "w")
+output_json = io.open("../data/output.json", "w")
 
 -- replay frame count
 -- emulator and ingame frame counts don't start at 0, but this will
 replay_frame = 0
 
--- startpoint for the emu framecount
-initial_emu_framecount = 0
+-- startpoints for the emu framecount
+-- on_start() call and the first per_frame() call
+startup_emu_frame = 0
+first_frame_emu_frame = 0
 
--- first startup flag; used to make sure certain operations will only execute the first time on_start() is called
-first_startup = true
+-- flags used to make sure certain operations are only execute the first time on_start() and per_frame() are called
+first_startup_flag = true
+first_frame_flag = true
 
 -- projected duration of the replay in frames
 duration_in_frames = working_json["duration"] * 60
@@ -65,10 +66,11 @@ function on_start()
 	output_txt:write("emulation started!\n")
 
 	-- only execute these operations during the initial startup
-	if first_startup == true then
-		output_txt:write("Initial emu frame: " .. emu.framecount() .. "\n\n")
-		initial_emu_framecount = emu.framecount()
-		first_startup = false
+	if first_startup_flag == true then	
+		first_startup_flag = false
+
+		startup_emu_frame = emu.framecount()
+		output_txt:write("startup emu frame: " .. startup_emu_frame .. "\n\n")
 	end
 end
 
@@ -81,6 +83,9 @@ function on_exit()
 	output_table_json_string = json.encode(output_table, {indent = true})
 	output_json:write(output_table_json_string)
 
+	-- confirm we made it here in the output txt
+	output_txt:write("\nlua script ended successfully")
+
 	-- close the output files being worked on
 	output_txt:close()
 	output_json:close()
@@ -89,6 +94,12 @@ end
 
 -- runs every frame (currently registered to run at the end of the frame, before the inputs for the next frame are grabbed)
 function per_frame()
+	-- run first frame setup if nessesary
+	if first_frame_flag == true then
+		first_frame_setup()
+	end
+
+	-- table of information about the last frame
 	frame = get_frame_table()
 
 	-- update gui
@@ -99,16 +110,30 @@ function per_frame()
 	gui.text(30, 80, "                  P2 LIFE: " .. tostring(frame["p2 life"]))
 
 	-- write scraped frame information to output_txt
+	output_txt:write("replay frame: " .. tostring(frame["replay frame"] .. "\n"))
+	output_txt:write("emu frame:    " .. tostring(frame["emu frame"]) .. "\n")
 	output_txt:write("ingame frame: " .. tostring(frame["ingame frame"]) .. "\n")
-	output_txt:write("emu frame: " .. tostring(frame["emu frame"]) .. "\n")
-	output_txt:write("p1 life: " .. tostring(frame["p1 life"]) .. "\n")
-	output_txt:write("p2 life: " .. tostring(frame["p2 life"]) .. "\n")
-	output_txt:write("in match?: " .. frame["in match"] .. "\n")
+	output_txt:write("in match?:    " .. frame["in match"] .. "\n")
+	output_txt:write("p1 life:      " .. tostring(frame["p1 life"]) .. "\n")
+	output_txt:write("p2 life:      " .. tostring(frame["p2 life"]) .. "\n")
 	output_txt:write("\n")
 
 	-- add frame as a entry on output table
 	-- since the replay frame is persistent across resets, it will serve as the key 
 	output_table[frame["replay frame"]] = frame
+	
+	--[[
+	if replay_frame > 3000 then
+		os.exit()
+	end
+	--]]
+end
+
+
+-- execute the first time per_frame() is called
+function first_frame_setup()
+	first_frame_flag = false
+	first_frame_emu_frame = emu.framecount()
 end
 
 
@@ -129,13 +154,15 @@ function get_frame_table()
 	end
 
 	-- calculate replay frame
-	replay_frame = emu.framecount() - initial_emu_framecount
+	-- replay frames start the first time per_frame() is called
+	replay_frame = emu.framecount() - first_frame_emu_frame
 
 	-- add values to frame_table
 	frame_table["p1 life"] = p1_life
 	frame_table["p2 life"] = p2_life
-	frame_table["ingame frame"] = ingame_frame
 	frame_table["in match"] = in_match
+	frame_table["ingame frame"] = ingame_frame
+	frame_table["emu frame"] = emu.framecount()
 	frame_table["replay frame"] = replay_frame
 
 	return frame_table
