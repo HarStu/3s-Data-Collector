@@ -1,23 +1,12 @@
+"""
+Class for retrieving replays from the FC API
+
+TODO:
+    finish save_games_to_output_json() function
+"""
 import sys
 import requests
 import json
-
-"""
-Retrieve replays from FC API. Run as follows:
-    python3 get-replays.py <player> <gameid>
-
-    defaults:
-        no arguments throws error
-        gameid defaults to sfiii3nr1
-        rank cutoff defaults to S (6)
-
-TODO:
-    option to download replays to individual player json, or main database json
-        or to player/game instead of player/main database?
-    verify that we're only retrieving ranked games?
-    split this into two files (one defining the class/function, and another entry point for the program)
-"""
-
 
 class Replayfetcher:
 
