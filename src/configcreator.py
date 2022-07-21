@@ -69,4 +69,4 @@ class Configcreator:
         if self.check_config_json() == True:
             print(f"Config json at '{self.config_json_path}' is valid")
         else:
-            create_config_json()
+            self.create_new_config_json()
