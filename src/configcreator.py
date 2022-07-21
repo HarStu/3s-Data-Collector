@@ -14,7 +14,7 @@ class Configcreator:
 
     def __init__(self):
         self.config_json_path = "../data/.config.json"
-        self.required_keys = ["fcadefbneo path", "replay json database path", "scraper path"]
+        self.required_keys = ["fcadefbneo path", "replay json database path", "scraper lua path"]
 
     # returns true if a valid config json already exists, returns false if it doesn't
     # valid is defined as all the keys existing, and pointing toward existing files. 
