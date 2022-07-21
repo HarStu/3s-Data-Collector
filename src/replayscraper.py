@@ -35,7 +35,7 @@ class Replayscraper:
 
         fcadefbneo = config["fcadefbneo_path"]
         scraper = config["scraper_path"]
-        json_database = "../data/" + config["replay_json_database_filename"]
+        json_database = config["replay_json_database_path"]
 
         # grab game which is going to be scraped, and output it to .working.json
         # when scraper.lua runs, it will read from .working.json
