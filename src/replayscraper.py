@@ -17,14 +17,12 @@ class Replayscraper:
     def __init__(self, games_json_path):
         self.games_json_path = games_json_path
 
-    # scrape a single replay
-    # challenge_id should correspond to an entry in the json found at games_json_path
     def scrape_replay(self, challenge_id):
         """
             scrape a single replay
             
             Args:
-                challenge_id (str): The challenge id, should be found in the json located at games_json_path
+                challenge_id (str): The challenge id, should correspond to a game found in the json at "replay json database path"
         """
 
         # fetch information from ../data/.config.json
@@ -33,9 +31,9 @@ class Replayscraper:
         with open("../data/.config.json", "r") as c:
             config = json.load(c)
 
-        fcadefbneo = config["fcadefbneo_path"]
-        scraper = config["scraper_path"]
-        json_database = config["replay_json_database_path"]
+        fcadefbneo = config["fcadefbneo lua path"]
+        scraper = config["scraper lua path"]
+        json_database = config["replay json database path"]
 
         # grab game which is going to be scraped, and output it to .working.json
         # when scraper.lua runs, it will read from .working.json
