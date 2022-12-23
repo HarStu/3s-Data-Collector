@@ -66,6 +66,10 @@ output_table = {}
 function on_start() 
 	output_txt:write("emulation started!\n")
 
+	-- turbo for faster data collection
+	-- emu frames are not always accurate, but every ingame frame is simulated
+	emu.speedmode("turbo")
+
 	-- only execute these operations during the initial startup
 	if first_startup_flag == true then	
 		first_startup_flag = false
