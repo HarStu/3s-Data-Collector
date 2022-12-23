@@ -59,7 +59,7 @@ class Replayscraper:
             [
                 "/usr/bin/wine",
                 f'{fcadefbneo}',
-                f'quark:stream,sfiii3nr1,{challenge_id}.2,7100',
+                f'quark:stream,sfiii3nr1,{challenge_id}.9,7100',
                 f'{scraper}'
             ],
             env = running_env
