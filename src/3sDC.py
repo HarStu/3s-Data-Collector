@@ -22,6 +22,6 @@ def main():
     # fetcher.save_games_to_test_json(games)
 
     scraper = replayscraper.Replayscraper("../data/test.json")
-    scraper.scrape_replay("1649265467782-9148")
+    scraper.scrape_replay("1664767691097-7221")
     
 main()
