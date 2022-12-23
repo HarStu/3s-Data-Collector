@@ -2,20 +2,17 @@
 	testing lua scripting capabilities 
 
 	NOTES:
-		emu.framecount() persists even through resets
-		the ingame frame_number does not 
 
 	TODOS:
 		find a reliable way to end the lua when the replay is complete
-			going to use score; we'll exit when the score recorded by the lua matches the final score in the working json
-			this means we need a system which can track score across resets
+			use the FC win detectors to measure the set score, and end the script when the set score is equivalent to what's expected in the working json
 		file output
 			create a hierarchical {replay {game {round {frame}}}} format for the json output
 		additional data to capture
 			capture additional values each frame, as well as values which are relevant on a replay/round/game level
 		verification
-			it can't be assumed that registerafter is only called once per frame, so make sure that the frame_number value is unique before adding the data to the output
-			this is also relevant for updating replay_frame_count
+			it can't be assumed that registerafter is only called once per frame
+				This may no longer be an issue; I don't think we're dropping frames, and we're only iterating replay_frame on each call of per_frame()
 		compartmentalize parts of per_frame()
 			create a print_frame_table function which outputs the contents of a frame table to the gui
 			create a function for adding frame_table to output.txt
@@ -50,7 +47,7 @@ replay_frame = 0
 output_table = {}
 
 
--- runs when emulation starts, or is reset
+-- runs when emulation starts
 function on_start() 
 	-- turbo for faster data collection
 	-- emu frames are not always accurate, but every ingame frame is simulated
